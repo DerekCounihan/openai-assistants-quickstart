@@ -1,48 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import styles from "./page.module.css";
 import Chat from "../../components/chat";
-import WeatherWidget from "../../components/weather-widget";
-import { getWeather } from "../../utils/weather";
+import { createChallenge } from "../../utils/challenge";
+import { createCommunity } from "../../utils/community";
+import { createYoutubeVideoInteraction } from "../../utils/youtube";
 import FileViewer from "../../components/file-viewer";
 
 const FunctionCalling = () => {
-  const [weatherData, setWeatherData] = useState({});
-
   const functionCallHandler = async (call) => {
-    if (call?.function?.name !== "get_weather") return;
-    const args = JSON.parse(call.function.arguments);
-    const data = getWeather(args.location);
-    setWeatherData(data);
-    return JSON.stringify(data);
-  };
+    console.log("functionCallHandler invoked");
+    console.log("Function call details:", call);
 
-  // return (
-  //   <main className={styles.main}>
-  //     <div className={styles.container}>
-  //       <div className={styles.fileViewer}>
-  //         <FileViewer />
-  //       </div>
-  //       <div className={styles.chatContainer}>
-  //         <div className={styles.weatherWidget}>
-  //           <div className={styles.weatherContainer}>
-  //             <WeatherWidget {...weatherData} />
-  //           </div>
-  //         </div>
-  //         <div className={styles.chat}>
-  //           <Chat functionCallHandler={functionCallHandler} />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </main>
-  // );
+    const args = call?.function?.arguments
+      ? JSON.parse(call.function.arguments)
+      : {};
+
+    switch (call?.function?.name) {
+      case "create_challenge":
+        const challengeData = await createChallenge(args);
+        return JSON.stringify(challengeData);
+
+      case "create_community":
+        const communityData = await createCommunity(args);
+        return JSON.stringify(communityData);
+
+      case "create_youtube_video_interaction":
+        const youtubeData = await createYoutubeVideoInteraction(args);
+        return JSON.stringify(youtubeData);
+
+      // Add other cases here for additional functions
+      default:
+        console.error(`Unknown function: ${call?.function?.name}`);
+        return "";
+    }
+  };
 
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.column}>
-          <WeatherWidget {...weatherData} />
           <FileViewer />
         </div>
         <div className={styles.chatContainer}>
